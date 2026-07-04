@@ -5,6 +5,7 @@ services:
       - "8000:8000"
     volumes:
      - ./app:/code/app
+     - ./alembic:/code/alembic
     env_file: .env
 
   db:
