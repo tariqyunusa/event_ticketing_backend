@@ -9,6 +9,7 @@ from alembic import context
 
 from app.core.database import Base, engine
 from app.models.event import Event
+from app.models.user import User
 from app.core.config import settings
 
 
