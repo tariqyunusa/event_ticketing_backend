@@ -5,7 +5,8 @@ from sqlalchemy import select
 from app.core.database import get_db
 from app.core.security import hash_password
 from app.models.user import User
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import Token, UserCreate, UserResponse
+from app.core.security import create_access_token, verify_password
 
 router = APIRouter()
 
@@ -28,3 +29,14 @@ async def signup(payload: UserCreate, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(new_user)
     return new_user
+
+@router.post("/login", response_model=Token)
+async def login(payload: UserCreate, db: AsyncSession = Depends(get_db) ):
+    result = await db.execute(select(User).where(User.email == payload.email))
+    user = result.scalar_one_or_none()
+    
+    if not user or not verify_password(payload.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    access_token = create_access_token({"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer"} 

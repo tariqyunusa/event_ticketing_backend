@@ -7,6 +7,8 @@ services:
      - ./app:/code/app
      - ./alembic:/code/alembic
     env_file: .env
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
 
   db:
     image: postgres:16
