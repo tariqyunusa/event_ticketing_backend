@@ -7,6 +7,7 @@ from app.core.security import hash_password
 from app.models.user import User
 from app.schemas.user import Token, UserCreate, UserResponse
 from app.core.security import create_access_token, verify_password
+from app.api.deps import get_current_user
 
 router = APIRouter()
 
@@ -40,3 +41,7 @@ async def login(payload: UserCreate, db: AsyncSession = Depends(get_db) ):
     
     access_token = create_access_token({"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"} 
+
+@router.get("/me", response_model=UserResponse)
+async def read_current_user(current_user: User = Depends(get_current_user)):
+    return current_user
