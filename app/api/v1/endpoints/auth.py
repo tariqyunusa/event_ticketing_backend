@@ -31,6 +31,7 @@ async def signup(payload: UserCreate, db: AsyncSession = Depends(get_db)):
     await db.refresh(new_user)
     return new_user
 
+
 @router.post("/login", response_model=Token)
 async def login(payload: UserCreate, db: AsyncSession = Depends(get_db) ):
     result = await db.execute(select(User).where(User.email == payload.email))
