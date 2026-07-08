@@ -26,3 +26,9 @@ async def create_event(payload: EventCreate, db: AsyncSession = Depends(get_db),
     await db.commit()
     await db.refresh(new_event)
     return new_event
+
+@router.get("/events", response_model=list[EventResponse])
+async def list_events(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Evevnt))
+    events = result.scalars().all()
+    return events
