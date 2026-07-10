@@ -10,7 +10,10 @@ from alembic import context
 from app.core.database import Base, engine
 from app.models.event import Event
 from app.models.user import User
+from app.models.ticket_type import TicketType
+
 from app.core.config import settings
+
 
 
 # this is the Alembic Config object, which provides
