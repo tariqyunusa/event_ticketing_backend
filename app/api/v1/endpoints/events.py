@@ -65,3 +65,14 @@ async def create_ticket_type(
     await db.commit()
     await db.refresh(new_ticket_Type)
     return new_ticket_Type
+
+@router.get("/events/{event_id}/ticket-types", response_model=list[TicketTypeResponse])
+async def list_ticket_types(event_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Event).where(Event.id == event_id))
+    event = result.scalar_one_or_none()
+    if event is None:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    ticket_result = await db.execute(select(TicketType).where(TicketType.event_id == event_id))
+    ticket_types = ticket_result.scalars().all()
+    return ticket_types
