@@ -18,6 +18,6 @@ class Order(Base):
     ticket_type_id: Mapped[int] = mapped_column(ForeignKey("ticket_types.id"))
     quantity: Mapped[int]
     total_price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
-    status: Mapped[OrderStatus] = mapped_column(SQLEnum(OrderStatus, values_callable= lambda x: [e.value for e in x]), default=OrderStatus.PENDING),
+    status: Mapped[OrderStatus] = mapped_column(SQLEnum(OrderStatus, values_callable= lambda x: [e.value for e in x]), default=OrderStatus.PENDING)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     

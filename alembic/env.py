@@ -11,6 +11,8 @@ from app.core.database import Base, engine
 from app.models.event import Event
 from app.models.user import User
 from app.models.ticket_type import TicketType
+from app.models.order import Order
+from app.models.ticket import Ticket
 
 from app.core.config import settings
 
