@@ -18,7 +18,7 @@ async def create_order(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # step 2: locked read
+
     result = await db.execute(
         select(TicketType).where(TicketType.id == payload.ticket_type_id).with_for_update()
     )
@@ -26,4 +26,19 @@ async def create_order(
     if ticket_type is None:
         raise HTTPException(status_code=404, detail="Ticket type not found")
 
+    if payload.quantity > ticket_type.quantity_available:
+        raise HTTPException(status_code=400, detail="Not enough tickets available")
     
+    ticket_type.quantity_available -= payload.quantity
+    total_price = ticket_type.price * payload.quantity
+    
+    new_order = Order(
+        user_id=current_user.id,
+        ticket_type_id=ticket_type.id,
+        quantity=payload.quantity,
+        total_price=total_price,
+        status=OrderStatus.PENDING,
+    )
+    db.add(new_order)
+    await db.commit()
+    await db.refresh(new_order)
