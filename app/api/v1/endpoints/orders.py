@@ -42,3 +42,15 @@ async def create_order(
     db.add(new_order)
     await db.commit()
     await db.refresh(new_order)
+    
+    for _ in range(payload.quantity):
+        new_ticket = Ticket(
+            order_id=new_order.id,
+            ticket_type_id=ticket_type.id,
+            owner_id=current_user.id,
+            status=TicketStatus.VALID
+        )
+        db.add(new_ticket)
+    await db.commit()
+    return new_order
+   
