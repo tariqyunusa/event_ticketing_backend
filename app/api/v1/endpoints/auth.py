@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+import time
 
 from app.core.database import get_db
 from app.core.security import hash_password
@@ -9,6 +10,9 @@ from app.schemas.user import Token, UserCreate, UserResponse
 from app.core.security import create_access_token, verify_password
 from app.api.deps import get_current_user
 from app.core.rate_limit import is_rate_limited, record_failed_attempt, clear_failed_attempts
+from app.api.deps import oauth2_scheme
+from app.core.token_blacklist import blacklist_token
+from app.core.security import decode_access_token
 
 router = APIRouter()
 
@@ -52,3 +56,14 @@ async def login(payload: UserCreate, db: AsyncSession = Depends(get_db) ):
 @router.get("/me", response_model=UserResponse)
 async def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user
+
+@router.post("/logout")
+async def logout(token: str = Depends(oauth2_scheme)):
+    payload = decode_access_token(token)
+    exp_timestamp = payload.get("exp")
+    now_timestamp = int(time.time())
+    remaining_seconds = exp_timestamp - now_timestamp
+    
+    await blacklist_token(token, remaining_seconds)
+    return {"detail": "Successfully logged out"}
+    
