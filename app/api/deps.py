@@ -6,6 +6,7 @@ from sqlalchemy import select
 from app.core.database import get_db
 from app.core.security import decode_access_token
 from app.models.user import User, UserRole
+from app.core.token_blacklist import is_token_blacklisted
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/auth/login')
 
@@ -15,6 +16,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         detail="Invalid authentication credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    if await is_token_blacklisted(token):
+        raise credentials_exception
 
     payload = decode_access_token(token)
     if payload is None:
