@@ -8,6 +8,7 @@ from app.models.user import User
 from app.schemas.user import Token, UserCreate, UserResponse
 from app.core.security import create_access_token, verify_password
 from app.api.deps import get_current_user
+from app.core.rate_limit import is_rate_limited, record_failed_attempt, clear_failed_attempts
 
 router = APIRouter()
 
@@ -34,12 +35,17 @@ async def signup(payload: UserCreate, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 async def login(payload: UserCreate, db: AsyncSession = Depends(get_db) ):
+    if await is_rate_limited(payload.email):
+        raise HTTPException(status_code=429, detail="Too many failed login attempts")
+    
     result = await db.execute(select(User).where(User.email == payload.email))
     user = result.scalar_one_or_none()
     
     if not user or not verify_password(payload.password, user.hashed_password):
+        await record_failed_attempt(payload.email)
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
+    await clear_failed_attempts(payload.email)
     access_token = create_access_token({"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"} 
 
