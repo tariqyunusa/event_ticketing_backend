@@ -40,6 +40,6 @@ async def check_in_ticket(
     ticket.status = TicketStatus.USED
     
     await db.commit()
-    await db.refresh()
+    await db.refresh(ticket)
     return ticket
 
