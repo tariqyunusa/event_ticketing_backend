@@ -5,6 +5,7 @@ from app.models.user import UserRole
 class UserCreate(BaseModel):
     email: str
     password: str
+    role: UserRole = UserRole.BUYER
 
 class UserResponse(BaseModel):
     id: int
