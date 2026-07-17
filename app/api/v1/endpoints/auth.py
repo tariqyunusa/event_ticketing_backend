@@ -29,7 +29,7 @@ async def signup(payload: UserCreate, db: AsyncSession = Depends(get_db)):
     hashed_pw = hash_password(payload.password)
     
     #create new user
-    new_user = User(email=payload.email, hashed_password=hashed_pw)
+    new_user = User(email=payload.email, hashed_password=hashed_pw, role=payload.role)
     
     db.add(new_user)
     await db.commit()
