@@ -30,8 +30,8 @@ async def create_event(payload: EventCreate, db: AsyncSession = Depends(get_db),
     return new_event
 
 @router.get("/events", response_model=list[EventResponse])
-async def list_events(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Event))
+async def list_events(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Event).offset(skip).limit(limit))
     events = result.scalars().all()
     return events
 
